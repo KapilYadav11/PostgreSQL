@@ -1,0 +1,21 @@
+# Dependency directories
+node_modules/
+
+# Build outputs (compiled TypeScript)
+dist/
+out/
+build/
+
+# Private environment variables (Secrets)
+.env
+.env.local
+.env.development.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System files
+.DS_Store
+Thumbs.db
