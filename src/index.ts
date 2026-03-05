@@ -13,7 +13,11 @@ app.use(express.json()); // Essential to parse JSON body
 const signupSchema = z.object({
     username: z.string().min(3).max(50),
     email: z.string().email(),
-    password: z.string().min(6)
+    password: z.string().min(6),
+    city: z.string(),
+    country: z.string(),
+    street: z.string(),
+    pincode: z.string()
 });
 
 // 2. Database Client
@@ -27,7 +31,7 @@ app.post('/signup', async (req, res) => {
     try {
         // Validate the input data using Zod
         const parsedData = signupSchema.parse(req.body);
-        const { username, email, password } = parsedData;
+        const { username, email, password, city, country, street, pincode } = parsedData;
 
         // Hash the password (using 10 salt rounds)
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -41,6 +45,14 @@ app.post('/signup', async (req, res) => {
         const values = [username, email, hashedPassword];
 
         const result = await client.query(query, values);
+
+        const userId = result.rows[0].id;
+
+        const addressInsertQuery = `INSERT INTO addresses (city, country, street, pincode, user_id) VALUES($1, $2, $3, $4, $5);`;
+
+        const addValues = [city, country, street, pincode, userId];
+
+        const addressInsertQueryResponse = await client.query(addressInsertQuery, addValues)
 
         res.status(201).json({
             message: "User created successfully",
@@ -57,8 +69,7 @@ app.post('/signup', async (req, res) => {
         // Handle Unique Constraint Errors (e.g., email already exists)
         if (error.code === '23505') {
             return res.status(409).json({ 
-            message: "Username or Email already exists" 
-        });
+            message: "Username or Email already exists" });
         }
 
         console.error(error);
